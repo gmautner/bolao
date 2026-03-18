@@ -102,6 +102,65 @@ func TestMe_UnauthorizedWithoutSession(t *testing.T) {
 	}
 }
 
+
+func TestSendMagicLink_DevModeNoSMTP_ReturnsOK(t *testing.T) {
+	// In dev mode without SMTP, the handler should succeed (link is logged).
+	app := newTestApp(t) // DevMode=true, no SMTP
+
+	body, _ := json.Marshal(map[string]string{"email": "devtest@test.bolao"})
+	resp, err := http.Post(app.server.URL+"/api/auth/magic-link", "application/json", bytes.NewReader(body))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("dev mode no SMTP: got %d, want 200", resp.StatusCode)
+	}
+}
+
+func TestSendMagicLink_ProdModeNoSMTP_ReturnsError(t *testing.T) {
+	// In production mode without SMTP, the handler must return an error — not silently succeed.
+	app := newTestAppProd(t) // DevMode=false, no SMTP
+
+	body, _ := json.Marshal(map[string]string{"email": "prodtest@test.bolao"})
+	resp, err := http.Post(app.server.URL+"/api/auth/magic-link", "application/json", bytes.NewReader(body))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusInternalServerError {
+		t.Errorf("prod mode no SMTP: got %d, want 500", resp.StatusCode)
+	}
+}
+
+func TestSendMagicLink_InvalidEmail_ReturnsBadRequest(t *testing.T) {
+	app := newTestApp(t)
+
+	cases := []struct {
+		name  string
+		email string
+	}{
+		{"empty email", ""},
+		{"missing at sign", "notanemail"},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			body, _ := json.Marshal(map[string]string{"email": tc.email})
+			resp, err := http.Post(app.server.URL+"/api/auth/magic-link", "application/json", bytes.NewReader(body))
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer resp.Body.Close()
+			if resp.StatusCode != http.StatusBadRequest {
+				t.Errorf("email %q: got %d, want 400", tc.email, resp.StatusCode)
+			}
+		})
+	}
+}
+
 func TestLogout_ClearsSession(t *testing.T) {
 	app := newTestApp(t)
 	email := fmt.Sprintf("logout_test_%d@test.bolao", uniqueID())

@@ -103,6 +103,59 @@ func newTestApp(t *testing.T) *testApp {
 	}
 }
 
+// newTestAppProd creates a test app with DevMode=false and no SMTP configured,
+// simulating a production environment missing email configuration.
+func newTestAppProd(t *testing.T) *testApp {
+	t.Helper()
+
+	dbURL := os.Getenv("DATABASE_URL")
+	if dbURL == "" {
+		dbURL = "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable"
+	}
+
+	ctx := context.Background()
+	pool, err := pgxpool.New(ctx, dbURL)
+	if err != nil {
+		t.Skipf("skipping integration test (no DB): %v", err)
+	}
+	if err := pool.Ping(ctx); err != nil {
+		pool.Close()
+		t.Skipf("skipping integration test (DB not reachable): %v", err)
+	}
+
+	if err := database.RunMigrations(ctx, pool); err != nil {
+		pool.Close()
+		t.Fatalf("migrations failed: %v", err)
+	}
+
+	sqlDB := stdlib.OpenDBFromPool(pool)
+
+	cfg := config.Config{
+		Port:            "8080",
+		DevMode:         false, // production mode — no SMTP configured
+		BlobStoragePath: t.TempDir(),
+		BaseURL:         "http://localhost:8080",
+		SessionSecret:   "test-secret",
+		// SMTPHost intentionally empty to simulate misconfiguration
+	}
+
+	a := auth.New(cfg, sqlDB)
+	h := New(cfg, sqlDB, a)
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("POST /api/auth/magic-link", h.SendMagicLink)
+
+	srv := httptest.NewServer(mux)
+
+	t.Cleanup(func() {
+		srv.Close()
+		sqlDB.Close()
+		pool.Close()
+	})
+
+	return &testApp{handler: h, auth: a, pool: pool, sqlDB: sqlDB, server: srv}
+}
+
 // cleanupTestUsers removes test users created during a test by email prefix.
 func cleanupTestUsers(t *testing.T, pool *pgxpool.Pool, emails ...string) {
 	t.Helper()

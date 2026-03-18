@@ -168,7 +168,10 @@ func (a *Auth) VerifyMagicLink(ctx context.Context, token string) (*db.MagicLink
 
 func (a *Auth) sendEmail(to, subject, body string) error {
 	if a.cfg.SMTPHost == "" {
-		slog.Warn("SMTP not configured, magic link not sent", "to", to, "subject", subject)
+		if !a.cfg.DevMode {
+			return fmt.Errorf("SMTP não configurado: defina SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD e SMTP_FROM")
+		}
+		slog.Warn("SMTP not configured, magic link not sent (dev mode)", "to", to, "subject", subject)
 		slog.Info("MAGIC LINK BODY", "body", body)
 		return nil
 	}
