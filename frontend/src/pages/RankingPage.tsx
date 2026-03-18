@@ -29,10 +29,10 @@ const RankingTable: React.FC<{ entries: RankingEntry[]; myUserId?: string }> = (
 
       {entries.map((entry, idx) => (
         <div
-          key={entry.user_id}
+          key={entry.id}
           className={`grid grid-cols-[2rem_1fr_3.5rem_3.5rem_3.5rem] gap-2 items-center px-4 py-3 ${
             idx < entries.length - 1 ? 'border-b border-gray-50' : ''
-          } ${entry.user_id === myUserId ? 'bg-orange-50' : 'hover:bg-gray-50'} transition-colors`}
+          } ${entry.id === myUserId ? 'bg-orange-50' : 'hover:bg-gray-50'} transition-colors`}
         >
           {/* Rank */}
           <span
@@ -70,11 +70,11 @@ const RankingTable: React.FC<{ entries: RankingEntry[]; myUserId?: string }> = (
             )}
             <span
               className={`text-sm font-semibold truncate ${
-                entry.user_id === myUserId ? 'text-orange-600' : 'text-gray-800'
+                entry.id === myUserId ? 'text-orange-600' : 'text-gray-800'
               }`}
             >
               {entry.display_name}
-              {entry.user_id === myUserId && (
+              {entry.id === myUserId && (
                 <span className="ml-1 text-xs text-orange-400 font-normal">você</span>
               )}
             </span>
@@ -82,12 +82,12 @@ const RankingTable: React.FC<{ entries: RankingEntry[]; myUserId?: string }> = (
 
           {/* Exact */}
           <span className="text-center text-sm font-semibold text-gray-700">
-            {entry.exact_scores}
+            {entry.predictions_scored || 0}
           </span>
 
           {/* Correct results */}
           <span className="text-center text-sm font-semibold text-gray-700">
-            {entry.correct_results}
+            
           </span>
 
           {/* Points */}
@@ -140,7 +140,7 @@ const RankingPage: React.FC = () => {
       ? globalRanking
       : groupRankings.get(activeTab) || [];
 
-  const myEntry = currentEntries.find((e) => e.user_id === user?.id);
+  const myEntry = currentEntries.find((e) => e.id === user?.id);
 
   return (
     <div className="flex flex-col gap-5">
@@ -157,7 +157,7 @@ const RankingPage: React.FC = () => {
           <div className="flex-1">
             <p className="font-bold">{user?.display_name}</p>
             <p className="text-orange-100 text-sm">
-              {myEntry.total_points} pts · {myEntry.exact_scores} exatos · {myEntry.correct_results} resultados
+              {myEntry.total_points} pts · {myEntry.predictions_scored || 0} palpites pontuados
             </p>
           </div>
         </div>

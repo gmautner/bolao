@@ -37,7 +37,9 @@ export interface Group {
 }
 
 export interface GroupMember {
-  id: string;
+  id: string;       // group_member row ID
+  user_id: string;  // actual user ID — use this to compare with auth user
+  group_id: string;
   email: string;
   display_name: string;
   photo_path: string;
@@ -64,16 +66,19 @@ export interface InviteLookup {
 export interface Match {
   id: string;
   phase: string;
+  phase_label: string;
   match_number: number;
+  group_name: string;
   home_team: string;
   away_team: string;
   home_score: number | null;
   away_score: number | null;
   has_extra_time: boolean;
-  kickoff_time: string;
+  match_time: string | null;  // RFC3339 string or null
   stadium: string;
   city: string;
-  status: 'scheduled' | 'open' | 'finished';
+  day_number: number;
+  status: 'scheduled' | 'open' | 'started' | 'finished';
 }
 
 export interface Prediction {
@@ -90,13 +95,14 @@ export interface MatchWithPrediction {
 }
 
 export interface RankingEntry {
+  id: string;          // user ID
   rank: number;
-  user_id: string;
   display_name: string;
   photo_path: string;
   total_points: number;
-  exact_scores: number;
-  correct_results: number;
+  predictions_scored?: number;
+  is_admin?: boolean;
+  is_current_user?: boolean;
 }
 
 // --- Auth ---

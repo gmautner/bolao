@@ -37,7 +37,7 @@ func (h *Handler) ListMatches(w http.ResponseWriter, r *http.Request) {
 	if matches == nil {
 		matches = []db.Match{}
 	}
-	respond(w, http.StatusOK, matches)
+	respond(w, http.StatusOK, matchesToResponse(matches))
 }
 
 // GET /api/matches/open
@@ -55,7 +55,7 @@ func (h *Handler) ListOpenMatches(w http.ResponseWriter, r *http.Request) {
 	if matches == nil {
 		matches = []db.Match{}
 	}
-	respond(w, http.StatusOK, matches)
+	respond(w, http.StatusOK, matchesToResponse(matches))
 }
 
 // GET /api/matches/{id}
@@ -85,7 +85,7 @@ func (h *Handler) GetMatch(w http.ResponseWriter, r *http.Request) {
 	})
 
 	respond(w, http.StatusOK, map[string]any{
-		"match":      match,
+		"match":      matchToResponse(match),
 		"prediction": pred,
 	})
 }

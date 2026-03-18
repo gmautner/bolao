@@ -5,3 +5,4 @@ frontend/node_modules/
 .env
 .claude/launch.json
 *.local
+backend/blobs/

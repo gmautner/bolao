@@ -180,7 +180,7 @@ const AdminPage: React.FC = () => {
             const state = rowState.get(match.id);
             if (!state) return null;
             const needsTeams = !match.home_team || !match.away_team;
-            const kickoff = new Date(match.kickoff_time);
+            const kickoff = match.match_time ? new Date(match.match_time) : null;
 
             return (
               <div
@@ -194,7 +194,7 @@ const AdminPage: React.FC = () => {
                       {PHASE_LABELS[match.phase] || match.phase} · #{match.match_number}
                     </span>
                     <p className="text-xs text-gray-400 mt-0.5">
-                      {kickoff.toLocaleString('pt-BR', {
+                      {kickoff?.toLocaleString('pt-BR', {
                         day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
                       })} · {match.stadium}
                     </p>

@@ -64,7 +64,8 @@ const GroupDetailPage: React.FC = () => {
       .finally(() => setRankingLoading(false));
   }, [id]);
 
-  const isAdmin = detail?.members.find((m) => m.id === user?.id)?.is_admin ?? false;
+  // Compare user_id (the actual user UUID), not id (the group_member row UUID)
+  const isAdmin = detail?.members.find((m) => m.user_id === user?.id)?.is_admin ?? false;
 
   const handleGenerateInvite = async () => {
     if (!id) return;
@@ -276,10 +277,10 @@ const GroupDetailPage: React.FC = () => {
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
               {ranking.map((entry, idx) => (
                 <div
-                  key={entry.user_id}
+                  key={entry.id}
                   className={`flex items-center gap-3 px-4 py-3 ${
                     idx < ranking.length - 1 ? 'border-b border-gray-50' : ''
-                  } ${entry.user_id === user?.id ? 'bg-orange-50' : ''}`}
+                  } ${entry.id === user?.id ? 'bg-orange-50' : ''}`}
                 >
                   <span
                     className={`text-sm font-black w-6 text-center ${
@@ -298,12 +299,12 @@ const GroupDetailPage: React.FC = () => {
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-gray-800 truncate">
                       {entry.display_name}
-                      {entry.user_id === user?.id && (
+                      {entry.id === user?.id && (
                         <span className="ml-1 text-xs text-orange-500">(você)</span>
                       )}
                     </p>
                     <p className="text-xs text-gray-400">
-                      {entry.exact_scores} exatos · {entry.correct_results} resultados
+                      {entry.predictions_scored || 0} palpites pontuados
                     </p>
                   </div>
 

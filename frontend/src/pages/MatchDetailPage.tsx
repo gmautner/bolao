@@ -84,7 +84,7 @@ const MatchDetailPage: React.FC = () => {
   const { match, prediction } = data;
   const isOpen = match.status === 'open';
   const isFinished = match.status === 'finished';
-  const kickoff = new Date(match.kickoff_time);
+  const kickoff = match.match_time ? new Date(match.match_time) : null;
 
   return (
     <div className="max-w-lg mx-auto flex flex-col gap-5">
@@ -102,13 +102,13 @@ const MatchDetailPage: React.FC = () => {
             {PHASE_LABELS[match.phase] || match.phase}
           </p>
           <p className="text-white text-sm mt-0.5">
-            {kickoff.toLocaleDateString('pt-BR', {
+            {kickoff?.toLocaleDateString('pt-BR', {
               weekday: 'long',
               day: '2-digit',
               month: 'long',
             })}{' '}
             às{' '}
-            {kickoff.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+            {kickoff?.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
           </p>
           {match.stadium && (
             <p className="text-green-300 text-xs mt-1">

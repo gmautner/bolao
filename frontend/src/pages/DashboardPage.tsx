@@ -3,43 +3,84 @@ import { Link } from 'react-router-dom';
 import { getMatches, getGroups, getGlobalRanking, type Match, type Group, type RankingEntry } from '../lib/api';
 import { useAuth } from '../contexts/AuthContext';
 
+// Bandeiras de todos os 48 times da Copa 2026 (nomes em português do seed)
 const TEAM_FLAGS: Record<string, string> = {
-  'Brasil': '🇧🇷', 'Brazil': '🇧🇷',
-  'Argentina': '🇦🇷',
-  'França': '🇫🇷', 'France': '🇫🇷',
-  'Alemanha': '🇩🇪', 'Germany': '🇩🇪',
-  'Espanha': '🇪🇸', 'Spain': '🇪🇸',
-  'Portugal': '🇵🇹',
-  'Inglaterra': '🏴󠁧󠁢󠁥󠁮󠁧󠁿', 'England': '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
-  'Itália': '🇮🇹', 'Italy': '🇮🇹',
-  'Holanda': '🇳🇱', 'Netherlands': '🇳🇱',
-  'Bélgica': '🇧🇪', 'Belgium': '🇧🇪',
-  'Croácia': '🇭🇷', 'Croatia': '🇭🇷',
-  'Uruguai': '🇺🇾', 'Uruguay': '🇺🇾',
-  'México': '🇲🇽', 'Mexico': '🇲🇽',
-  'EUA': '🇺🇸', 'USA': '🇺🇸', 'United States': '🇺🇸',
-  'Canadá': '🇨🇦', 'Canada': '🇨🇦',
-  'Japão': '🇯🇵', 'Japan': '🇯🇵',
-  'Coreia do Sul': '🇰🇷', 'South Korea': '🇰🇷',
-  'Marrocos': '🇲🇦', 'Morocco': '🇲🇦',
+  // Grupo A
+  'México': '🇲🇽',
+  'Coreia do Sul': '🇰🇷',
+  'África do Sul': '🇿🇦',
+  // Grupo B
+  'Canadá': '🇨🇦',
+  'Catar': '🇶🇦',
+  'Suíça': '🇨🇭',
+  // Grupo C
+  'Brasil': '🇧🇷',
+  'Marrocos': '🇲🇦',
+  'Haiti': '🇭🇹',
+  'Escócia': '🏴󠁧󠁢󠁳󠁣󠁴󠁿',
+  // Grupo D
+  'Estados Unidos': '🇺🇸',
+  'Paraguai': '🇵🇾',
+  'Austrália': '🇦🇺',
+  // Grupo E
+  'Alemanha': '🇩🇪',
+  'Costa do Marfim': '🇨🇮',
+  'Equador': '🇪🇨',
+  'Curaçao': '🇨🇼',
+  // Grupo F
+  'Holanda': '🇳🇱',
+  'Japão': '🇯🇵',
+  'Tunísia': '🇹🇳',
+  // Grupo G
+  'Bélgica': '🇧🇪',
+  'Egito': '🇪🇬',
+  'Irã': '🇮🇷',
+  'Nova Zelândia': '🇳🇿',
+  // Grupo H
+  'Espanha': '🇪🇸',
+  'Arábia Saudita': '🇸🇦',
+  'Cabo Verde': '🇨🇻',
+  'Uruguai': '🇺🇾',
+  // Grupo I
+  'França': '🇫🇷',
   'Senegal': '🇸🇳',
-  'Nigéria': '🇳🇬', 'Nigeria': '🇳🇬',
-  'Austrália': '🇦🇺', 'Australia': '🇦🇺',
+  'Noruega': '🇳🇴',
+  // Grupo J
+  'Argentina': '🇦🇷',
+  'Argélia': '🇩🇿',
+  'Áustria': '🇦🇹',
+  'Jordânia': '🇯🇴',
+  // Grupo K
+  'Portugal': '🇵🇹',
+  'Colômbia': '🇨🇴',
+  'Uzbequistão': '🇺🇿',
+  // Grupo L
+  'Inglaterra': '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
+  'Croácia': '🇭🇷',
+  'Gana': '🇬🇭',
+  'Panamá': '🇵🇦',
 };
 
-export const getFlag = (team: string): string => TEAM_FLAGS[team] || '🏳️';
+export const getFlag = (team: string): string => {
+  if (!team || team.startsWith('TBD')) return '🏳️';
+  return TEAM_FLAGS[team] || '⚽';
+};
 
-const formatDate = (iso: string) => {
+const formatDate = (iso: string | null | undefined): string => {
+  if (!iso) return '—';
   const d = new Date(iso);
-  return d.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' });
+  if (isNaN(d.getTime())) return '—';
+  return d.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit', timeZone: 'America/Sao_Paulo' });
 };
 
-const formatTime = (iso: string) => {
+const formatTime = (iso: string | null | undefined): string => {
+  if (!iso) return '';
   const d = new Date(iso);
-  return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  if (isNaN(d.getTime())) return '';
+  return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' });
 };
 
-const Countdown: React.FC<{ kickoff: string }> = ({ kickoff }) => {
+const Countdown: React.FC<{ kickoff: string | null | undefined }> = ({ kickoff }) => {
   const [, forceUpdate] = useState(0);
 
   useEffect(() => {
@@ -47,6 +88,7 @@ const Countdown: React.FC<{ kickoff: string }> = ({ kickoff }) => {
     return () => clearInterval(id);
   }, []);
 
+  if (!kickoff) return <span className="text-gray-400 text-xs">—</span>;
   const diff = new Date(kickoff).getTime() - Date.now();
   if (diff <= 0) return <span className="text-green-600 font-semibold text-xs">Em andamento</span>;
 
@@ -76,7 +118,7 @@ const DashboardPage: React.FC = () => {
       .then((all) => {
         const now = new Date();
         const upcoming = all
-          .filter((m) => new Date(m.kickoff_time) > now || m.status === 'open')
+          .filter((m) => m.match_time && new Date(m.match_time) > now || m.status === 'open')
           .slice(0, 5);
         setUpcomingMatches(upcoming);
       })
@@ -90,7 +132,7 @@ const DashboardPage: React.FC = () => {
 
     getGlobalRanking()
       .then((ranking) => {
-        const entry = ranking.find((r) => r.user_id === user?.id) || null;
+        const entry = ranking.find((r) => r.is_current_user) || null;
         setRankingEntry(entry);
       })
       .catch(() => {})
@@ -182,12 +224,12 @@ const DashboardPage: React.FC = () => {
                       <span>{getFlag(match.away_team)}</span>
                     </div>
                     <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
-                      <span>{formatDate(match.kickoff_time)} {formatTime(match.kickoff_time)}</span>
+                      <span>{formatDate(match.match_time)} {formatTime(match.match_time)}</span>
                       {match.city && <span>· {match.city}</span>}
                     </div>
                   </div>
                   <div className="ml-3 text-right">
-                    <Countdown kickoff={match.kickoff_time} />
+                    <Countdown kickoff={match.match_time} />
                     {match.status === 'open' && (
                       <span className="block text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium mt-1">
                         Aberto

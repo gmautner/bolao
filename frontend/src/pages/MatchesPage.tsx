@@ -7,25 +7,28 @@ const PHASES: { key: string; label: string }[] = [
   { key: 'group', label: 'Fase de Grupos' },
   { key: 'round_of_32', label: 'Round de 32' },
   { key: 'round_of_16', label: 'Oitavas de Final' },
-  { key: 'quarter', label: 'Quartas de Final' },
-  { key: 'semi', label: 'Semifinal' },
+  { key: 'quarterfinal', label: 'Quartas de Final' },
+  { key: 'semifinal', label: 'Semifinal' },
   { key: 'third_place', label: 'Disputa de 3º Lugar' },
   { key: 'final', label: 'Final' },
 ];
 
-const formatDateTime = (iso: string) => {
+const formatDateTime = (iso: string | null | undefined): string => {
+  if (!iso) return 'Horário a confirmar';
   const d = new Date(iso);
+  if (isNaN(d.getTime())) return 'Data inválida';
   return d.toLocaleString('pt-BR', {
     weekday: 'short',
     day: '2-digit',
     month: '2-digit',
     hour: '2-digit',
     minute: '2-digit',
+    timeZone: 'America/Sao_Paulo',
   });
 };
 
-const phaseLabel = (phase: string) => {
-  return PHASES.find((p) => p.key === phase)?.label || phase;
+const phaseLabel = (match: { phase: string; phase_label?: string }) => {
+  return match.phase_label || PHASES.find((p) => p.key === match.phase)?.label || match.phase;
 };
 
 interface PredictionInput {
@@ -86,10 +89,10 @@ const MatchCard: React.FC<{
         {/* Phase / time row */}
         <div className="flex items-center justify-between mb-3">
           <span className="text-xs text-gray-400 font-medium">
-            {phaseLabel(match.phase)}
+            {phaseLabel(match)}
           </span>
           <span className="text-xs text-gray-400">
-            {formatDateTime(match.kickoff_time)}
+            {formatDateTime(match.match_time)}
           </span>
         </div>
 
@@ -256,12 +259,12 @@ const MatchesPage: React.FC = () => {
     for (const m of matches) {
       if (!seenPhases.has(m.phase)) {
         seenPhases.add(m.phase);
-        groupedMatches.push({ phase: m.phase, label: phaseLabel(m.phase), matches: [] });
+        groupedMatches.push({ phase: m.phase, label: phaseLabel(m), matches: [] });
       }
       groupedMatches.find((g) => g.phase === m.phase)!.matches.push(m);
     }
   } else {
-    groupedMatches.push({ phase: activePhase, label: phaseLabel(activePhase), matches });
+    groupedMatches.push({ phase: activePhase, label: phaseLabel({ phase: activePhase }), matches });
   }
 
   // Phase filter tabs — only show phases that actually exist in data
