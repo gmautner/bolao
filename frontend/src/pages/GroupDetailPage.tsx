@@ -67,6 +67,12 @@ const GroupDetailPage: React.FC = () => {
   // Compare user_id (the actual user UUID), not id (the group_member row UUID)
   const isAdmin = detail?.members.find((m) => m.user_id === user?.id)?.is_admin ?? false;
 
+  // Constrói o link de convite usando a origem do próprio navegador.
+  // Assim funciona corretamente em dev (Vite) e em produção (Go) sem configuração.
+  const inviteUrl = invite
+    ? `${window.location.origin}/join/${invite.token}`
+    : null;
+
   const handleGenerateInvite = async () => {
     if (!id) return;
     setInviteLoading(true);
@@ -81,8 +87,8 @@ const GroupDetailPage: React.FC = () => {
   };
 
   const handleCopyInvite = () => {
-    if (!invite) return;
-    navigator.clipboard.writeText(invite.invite_url).then(() => {
+    if (!inviteUrl) return;
+    navigator.clipboard.writeText(inviteUrl).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     });
@@ -156,7 +162,7 @@ const GroupDetailPage: React.FC = () => {
               <div className="flex items-center gap-2">
                 <input
                   readOnly
-                  value={invite.invite_url}
+                  value={inviteUrl || ''}
                   className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-600 truncate focus:outline-none"
                 />
                 <button

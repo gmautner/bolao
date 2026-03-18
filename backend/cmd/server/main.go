@@ -124,8 +124,14 @@ func main() {
 		slog.Warn("DEV_MODE enabled — dev login endpoint active")
 	}
 
-	// SPA: serve frontend static files, catch-all returns index.html
-	mux.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("../../frontend/dist/assets"))))
+	// SPA: serve frontend static files, catch-all returns index.html.
+	// Path is relative to CWD when running (backend/ in dev, /app in production container).
+	// FRONTEND_DIST env var overrides if set.
+	frontendDist := os.Getenv("FRONTEND_DIST")
+	if frontendDist == "" {
+		frontendDist = "../frontend/dist" // dev: run from backend/
+	}
+	mux.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir(frontendDist+"/assets"))))
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		// API routes not found → 404
 		if strings.HasPrefix(r.URL.Path, "/api/") || strings.HasPrefix(r.URL.Path, "/auth/") {
@@ -133,7 +139,7 @@ func main() {
 			return
 		}
 		// SPA fallback — serve index.html for all other routes
-		http.ServeFile(w, r, "../../frontend/dist/index.html")
+		http.ServeFile(w, r, frontendDist+"/index.html")
 	})
 
 	addr := ":" + cfg.Port
