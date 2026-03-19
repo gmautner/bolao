@@ -54,4 +54,4 @@
 | Exibir pontos rendidos em partidas encerradas | Done | Query de predictions agora faz LEFT JOIN com scores; exibe pontos no card |
 | Configurar SMTP (Magic Link em produção) | Pendente | Criar App Password no Gmail |
 | Configurar Google OAuth (produção) | Pendente | Google Cloud Console |
-| Deploy (Preview environment) | In Progress | Dockerfile, Kamal config, workflows criados |
+| Deploy (Preview environment) | Done | App em https://191.252.227.195.nip.io |
