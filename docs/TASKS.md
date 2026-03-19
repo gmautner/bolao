@@ -47,7 +47,8 @@
 |--------|--------|-------|
 | Design mobile-first (React + Tailwind) | Done | 10 páginas completas |
 | Testes backend (Go) — scoring, auth, grupos, partidas | Done | 19 testes passando |
-| Testes frontend (Vitest) — LoginPage, GroupsPage | Done | 12 testes passando |
+| Testes frontend (Vitest) — LoginPage, GroupsPage, MatchesPage | Done | 19 testes passando |
+| Agrupamento por chave na tabela de jogos da primeira fase | Done | Toggle na tela de partidas quando "Fase de Grupos" está selecionada |
 | Configurar SMTP (Magic Link em produção) | Pendente | Criar App Password no Gmail |
 | Configurar Google OAuth (produção) | Pendente | Google Cloud Console |
 | Deploy (Preview environment) | Pendente | |

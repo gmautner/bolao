@@ -229,6 +229,7 @@ const MatchesPage: React.FC = () => {
   const [matches, setMatches] = useState<Match[]>([]);
   const [predictions, setPredictions] = useState<Prediction[]>([]);
   const [loading, setLoading] = useState(true);
+  const [groupByChave, setGroupByChave] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -252,19 +253,34 @@ const MatchesPage: React.FC = () => {
 
   const predMap = new Map(predictions.map((p) => [p.match_id, p]));
 
-  // Group matches by phase for display
-  const groupedMatches: { phase: string; label: string; matches: Match[] }[] = [];
-  if (!activePhase) {
+  // Check if we're viewing the group phase (either filtered or all)
+  const isGroupPhaseActive = activePhase === 'group';
+
+  // Group matches by phase or by chave for display
+  const groupedMatches: { key: string; label: string; matches: Match[] }[] = [];
+  if (isGroupPhaseActive && groupByChave) {
+    // Group by chave (group_name: A through L)
+    const seenGroups = new Set<string>();
+    for (const m of matches) {
+      const gn = m.group_name || '?';
+      if (!seenGroups.has(gn)) {
+        seenGroups.add(gn);
+        groupedMatches.push({ key: gn, label: `Grupo ${gn}`, matches: [] });
+      }
+      groupedMatches.find((g) => g.key === gn)!.matches.push(m);
+    }
+    groupedMatches.sort((a, b) => a.key.localeCompare(b.key));
+  } else if (!activePhase) {
     const seenPhases = new Set<string>();
     for (const m of matches) {
       if (!seenPhases.has(m.phase)) {
         seenPhases.add(m.phase);
-        groupedMatches.push({ phase: m.phase, label: phaseLabel(m), matches: [] });
+        groupedMatches.push({ key: m.phase, label: phaseLabel(m), matches: [] });
       }
-      groupedMatches.find((g) => g.phase === m.phase)!.matches.push(m);
+      groupedMatches.find((g) => g.key === m.phase)!.matches.push(m);
     }
   } else {
-    groupedMatches.push({ phase: activePhase, label: phaseLabel({ phase: activePhase }), matches });
+    groupedMatches.push({ key: activePhase, label: phaseLabel({ phase: activePhase }), matches });
   }
 
   // Phase filter tabs — only show phases that actually exist in data
@@ -280,7 +296,10 @@ const MatchesPage: React.FC = () => {
         {visibleTabs.map((phase) => (
           <button
             key={phase.key}
-            onClick={() => setActivePhase(phase.key)}
+            onClick={() => {
+              setActivePhase(phase.key);
+              if (phase.key !== 'group') setGroupByChave(false);
+            }}
             className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
               activePhase === phase.key
                 ? 'bg-orange-500 text-white'
@@ -291,6 +310,25 @@ const MatchesPage: React.FC = () => {
           </button>
         ))}
       </div>
+
+      {/* Group by chave toggle — only visible on group phase */}
+      {isGroupPhaseActive && (
+        <div className="flex items-center justify-end">
+          <button
+            onClick={() => setGroupByChave(!groupByChave)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+              groupByChave
+                ? 'bg-orange-100 text-orange-700 border border-orange-300'
+                : 'bg-white border border-gray-200 text-gray-600 hover:border-orange-300'
+            }`}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
+              <path fillRule="evenodd" d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zM2 10a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10zm0 5.25a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75a.75.75 0 01-.75-.75z" clipRule="evenodd" />
+            </svg>
+            Agrupar por chave
+          </button>
+        </div>
+      )}
 
       {loading ? (
         <div className="flex flex-col gap-2">
@@ -306,8 +344,8 @@ const MatchesPage: React.FC = () => {
       ) : (
         <div className="flex flex-col gap-4">
           {groupedMatches.map((group) => (
-            <div key={group.phase}>
-              {!activePhase && (
+            <div key={group.key}>
+              {(!activePhase || groupByChave) && (
                 <h2 className="text-sm font-bold text-gray-500 uppercase tracking-wide mb-2">
                   {group.label}
                 </h2>
