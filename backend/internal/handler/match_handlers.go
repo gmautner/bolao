@@ -152,6 +152,15 @@ func (h *Handler) UpsertPrediction(w http.ResponseWriter, r *http.Request) {
 	respond(w, http.StatusOK, pred)
 }
 
+// PredictionResponse is the JSON-friendly version of a user prediction.
+type PredictionResponse struct {
+	ID        string `json:"id"`
+	MatchID   string `json:"match_id"`
+	HomeScore int32  `json:"home_score"`
+	AwayScore int32  `json:"away_score"`
+	Points    *int32 `json:"points"`
+}
+
 // GET /api/predictions
 func (h *Handler) ListMyPredictions(w http.ResponseWriter, r *http.Request) {
 	user := h.requireAuth(w, r)
@@ -164,10 +173,22 @@ func (h *Handler) ListMyPredictions(w http.ResponseWriter, r *http.Request) {
 		respondError(w, http.StatusInternalServerError, "erro ao listar palpites")
 		return
 	}
-	if preds == nil {
-		preds = []db.ListUserPredictionsRow{}
+
+	result := make([]PredictionResponse, len(preds))
+	for i, p := range preds {
+		result[i] = PredictionResponse{
+			ID:        p.ID.String(),
+			MatchID:   p.MatchID.String(),
+			HomeScore: p.HomeScore,
+			AwayScore: p.AwayScore,
+		}
+		if p.Points.Valid {
+			v := p.Points.Int32
+			result[i].Points = &v
+		}
 	}
-	respond(w, http.StatusOK, preds)
+
+	respond(w, http.StatusOK, result)
 }
 
 // --- Superadmin endpoints ---

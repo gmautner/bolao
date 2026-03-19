@@ -48,6 +48,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 <NavLink to="/partidas" className={navLinkClass}>Partidas</NavLink>
                 <NavLink to="/grupos" className={navLinkClass}>Grupos</NavLink>
                 <NavLink to="/ranking" className={navLinkClass}>Ranking</NavLink>
+                <NavLink to="/regulamento" className={navLinkClass}>Regulamento</NavLink>
                 {user?.is_superadmin && (
                   <NavLink to="/admin" className={navLinkClass}>Admin</NavLink>
                 )}
@@ -121,6 +122,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               <NavLink to="/partidas" className={mobileNavLinkClass} onClick={() => setMenuOpen(false)}>Partidas</NavLink>
               <NavLink to="/grupos" className={mobileNavLinkClass} onClick={() => setMenuOpen(false)}>Grupos</NavLink>
               <NavLink to="/ranking" className={mobileNavLinkClass} onClick={() => setMenuOpen(false)}>Ranking</NavLink>
+              <NavLink to="/regulamento" className={mobileNavLinkClass} onClick={() => setMenuOpen(false)}>Regulamento</NavLink>
               {user?.is_superadmin && (
                 <NavLink to="/admin" className={mobileNavLinkClass} onClick={() => setMenuOpen(false)}>Admin</NavLink>
               )}

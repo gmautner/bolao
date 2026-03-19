@@ -50,6 +50,8 @@
 | Testes frontend (Vitest) — LoginPage, GroupsPage, MatchesPage | Done | 19 testes passando |
 | Agrupamento por chave na tabela de jogos da primeira fase | Done | Toggle na tela de partidas quando "Fase de Grupos" está selecionada |
 | Bug: pontuação não calculada ao registrar resultado (context canceled) | Done | Goroutine usava contexto HTTP que era cancelado; corrigido com context.WithoutCancel |
+| Página de regulamento (/regulamento) | Done | Regras, pontuação, exemplos, multiplicador, grupos, Copa 2026 |
+| Exibir pontos rendidos em partidas encerradas | Done | Query de predictions agora faz LEFT JOIN com scores; exibe pontos no card |
 | Configurar SMTP (Magic Link em produção) | Pendente | Criar App Password no Gmail |
 | Configurar Google OAuth (produção) | Pendente | Google Cloud Console |
 | Deploy (Preview environment) | Pendente | |

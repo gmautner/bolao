@@ -13,6 +13,7 @@ import GroupsPage from './pages/GroupsPage';
 import GroupDetailPage from './pages/GroupDetailPage';
 import RankingPage from './pages/RankingPage';
 import AdminPage from './pages/AdminPage';
+import RulesPage from './pages/RulesPage';
 import JoinGroupPage from './pages/JoinGroupPage';
 
 // --- Route guards ---
@@ -172,6 +173,19 @@ const AppRoutes: React.FC = () => {
                 <AdminPage />
               </Layout>
             </RequireSuperAdmin>
+          </RequireAuth>
+        }
+      />
+
+      <Route
+        path="/regulamento"
+        element={
+          <RequireAuth>
+            <RequireProfileComplete>
+              <Layout>
+                <RulesPage />
+              </Layout>
+            </RequireProfileComplete>
           </RequireAuth>
         }
       />

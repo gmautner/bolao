@@ -13,9 +13,11 @@ SELECT * FROM predictions WHERE user_id = $1 AND match_id = $2;
 -- name: ListUserPredictions :many
 SELECT p.*, m.phase, m.home_team, m.away_team, m.match_time,
        m.home_score as result_home, m.away_score as result_away,
-       m.is_finished
+       m.is_finished,
+       s.total_points as points
 FROM predictions p
 JOIN matches m ON m.id = p.match_id
+LEFT JOIN scores s ON s.user_id = p.user_id AND s.match_id = p.match_id
 WHERE p.user_id = $1
 ORDER BY m.match_time ASC;
 
