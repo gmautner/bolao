@@ -1,3 +1,7 @@
 {
-  "agent": "cofounder:cofounder"
+  "agent": "cofounder:cofounder",
+  "defaultMode": "acceptEdits",
+  "permissions": {
+    "allow": ["Bash", "Read", "WebFetch"]
+  }
 }
