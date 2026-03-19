@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"log/slog"
@@ -207,9 +208,11 @@ func (h *Handler) SetMatchResult(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Process scores asynchronously
+	// Process scores asynchronously — use a detached context because the HTTP
+	// request context is canceled as soon as the response is sent.
 	go func() {
-		if err := h.ProcessMatchScores(ctx, matchID); err != nil {
+		bgCtx := context.WithoutCancel(ctx)
+		if err := h.ProcessMatchScores(bgCtx, matchID); err != nil {
 			slog.Error("processing scores", "match_id", matchID, "err", err)
 		}
 	}()
