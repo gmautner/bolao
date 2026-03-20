@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -131,15 +132,20 @@ func main() {
 	if frontendDist == "" {
 		frontendDist = "../frontend/dist" // dev: run from backend/
 	}
-	mux.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir(frontendDist+"/assets"))))
+	fs := http.FileServer(http.Dir(frontendDist))
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		// API routes not found → 404
 		if strings.HasPrefix(r.URL.Path, "/api/") || strings.HasPrefix(r.URL.Path, "/auth/") {
 			http.NotFound(w, r)
 			return
 		}
-		// SPA fallback — serve index.html for all other routes
-		http.ServeFile(w, r, frontendDist+"/index.html")
+		// Serve real files from dist; fall back to index.html for SPA routes
+		if r.URL.Path != "/" {
+			if _, err := os.Stat(filepath.Join(frontendDist, filepath.Clean(r.URL.Path))); err == nil {
+				fs.ServeHTTP(w, r)
+				return
+			}
+		}
+		http.ServeFile(w, r, filepath.Join(frontendDist, "index.html"))
 	})
 
 	addr := ":" + cfg.Port
